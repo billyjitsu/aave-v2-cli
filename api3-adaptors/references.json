@@ -1,0 +1,26 @@
+{
+  "assets": [
+    {
+      "assetSymbol": "WBTC",
+      "pairName": "WBTC/USDC",
+      "ERC20": "0xE335De9A946e9DF28A3D9D3AE7eeb65D1BC1dFAD",
+      "Api3AggregatorAdaptor": "0x806d1019D1bCF431811Db34084Ac02e921ef0761"
+    },
+    {
+      "assetSymbol": "API3",
+      "pairName": "API3/USDC",
+      "ERC20": "0x1Fb1CC01B913660f94b44e108099d85Ecc19d557",
+      "Api3AggregatorAdaptor": "0x9CcBdA8C03357373f800EF15f1B8661c932BA512"
+    },
+    {
+      "assetSymbol": "ARB",
+      "pairName": "ARB/USDC",
+      "ERC20": "0xCAb77e19e6863AdF49Ce23Cc566448539B84abb0",
+      "Api3AggregatorAdaptor": "0x8066B38A6451891C784B814dAf225144229a8467"
+    }
+  ],
+  "USDCWithFaucet": "0x2728C49201C8E52AA2C24C2b535A993450B97f0c",
+  "AggregatorAdaptorUsdc": "0x436D0B3873A2F781023a59fDb7C9Cd932d4fCD92",
+  "Api3AggregatorAdaptorWETH": "0xb8F095eF149BC82847C5CB8bdC0b13AbF9dE4768",
+  "MockWETH": "0xb06b50bb94c498581c01a29833eC7FcA9aD3C9e3"
+}
