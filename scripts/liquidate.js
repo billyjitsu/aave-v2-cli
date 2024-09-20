@@ -2,9 +2,7 @@ const { ethers } = require('ethers');
 require('dotenv').config();
 
 const mnemonic = process.env.MNEMONIC;
-const provider = new ethers.providers.JsonRpcProvider(
-  'https://alien-thrumming-wind.arbitrum-sepolia.quiknode.pro/9e2372398f5f5bd9211072baca92043313851728'
-);
+const provider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_URL);
 const wallet = ethers.Wallet.fromMnemonic(mnemonic);
 const signer = wallet.connect(provider);
 console.log('Wallet Address', wallet.address);

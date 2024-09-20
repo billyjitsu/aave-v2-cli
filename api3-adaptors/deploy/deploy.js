@@ -72,6 +72,14 @@ module.exports = async () => {
     });
     deploymentsConfig['MockWETH'] = MockWETH.address;
 
+    // Deploy The Mock Oracle for Testing ONLY
+    const MockProxy = await hre.deployments.deploy("MockProxy", {
+        args: [],
+        from: (await hre.getUnnamedAccounts())[0],
+        log: true,
+    });
+    deploymentsConfig['MockProxy'] = MockProxy.address;
+
     fs.writeFileSync('references.json', JSON.stringify(deploymentsConfig, null, 2));
     console.log('Deployments saved to references.json');
 };
