@@ -5,8 +5,10 @@ const mnemonic = process.env.MNEMONIC;
 const provider = new ethers.providers.JsonRpcProvider(
   'https://alien-thrumming-wind.arbitrum-sepolia.quiknode.pro/9e2372398f5f5bd9211072baca92043313851728'
 );
-const wallet = ethers.Wallet.fromMnemonic(mnemonic[0]);
+const wallet = ethers.Wallet.fromMnemonic(mnemonic);
 const signer = wallet.connect(provider);
+
+console.log('Wallet Address', wallet.address);
 
 const USDCTokenAddress = '0x2728C49201C8E52AA2C24C2b535A993450B97f0c';
 const USDCTokenAbi = [
@@ -14,6 +16,7 @@ const USDCTokenAbi = [
   'function balanceOf(address account) public view returns (uint256)',
   'function transfer(address recipient, uint256 amount) public returns (bool)',
   'function faucet()public payable',
+  'function allowance(address owner, address spender) public view returns (uint256)'
 ];
 const LendingPoolAddress = '0x4364d3Bf9fc15FD61a9E46d6dD0f0975af532111';
 const lendingPoolAbi = [
@@ -114,57 +117,50 @@ const referralCode = 0;
 // deposit positionWallet OEV Tokens to the LendingPool
 
 //USDC deployed address on Sepolia Arbitrum 0x2728C49201C8E52AA2C24C2b535A993450B97f0c
+ console.log("about to deposit USDC Tokens to LendingPool");
+ const depositUSDCTokensToLendingPool = async () => {
+  try {
+    const amount = ethers.utils.parseUnits('1000', 6);
+    console.log('Wallet Address', wallet.address);
 
-const depositUSDCTokensToLendingPool = async () => {
-  
-  const amount = ethers.utils.parseUnits('1000', 6);
-  console.log('Wallet Address', wallet.address);
+    // Check USDC balance
+    const balance = await usdcToken.balanceOf(wallet.address);
+    console.log('USDC Balance:', ethers.utils.formatUnits(balance, 6));
 
-  const approveTx = await usdcToken.approve(LendingPoolAddress, amount);
-  await approveTx.wait(2);
-  console.log(`Approved USDC Tokens for LendingPool`);
-  const depositTx = await lendingPool.deposit(
-    USDCTokenAddress,
-    amount,
-    wallet.address,
-    referralCode
-  );
-  await depositTx.wait(2);
-  console.log(`Deposited USDC Tokens to LendingPool`);
+    // Check allowance
+    const allowance = await usdcToken.allowance(wallet.address, LendingPoolAddress);
+    console.log('Current allowance:', ethers.utils.formatUnits(allowance, 6));
 
-  // use promise.all
-  // const promises = []
-  // for(let i = 0; i < positionWallets.length; i++) {
-  //     promises.push(
-  //         new Promise(async (resolve, reject) => {
-  //             const singer = positionWallets[i];
-  //             const oevToken = new hre.ethers.Contract(OEVTokenAddress, OEVTokenAbi, singer);
-  //             const lendingPool = new hre.ethers.Contract(LendingPoolAddress, lendingPoolAbi, singer);
-  //             const referralCode = 0;
-  //             const amount = ethers.utils.parseUnits(randomValues[i][0].toString(), 18);
-  //             const balance = await oevToken.balanceOf(positionWallets[i].address);
-  //             if(balance.lt(amount)) {
-  //                 console.log(`Insufficient OEV Tokens for positionWallet ${i}`);
-  //                 resolve();
-  //                 return;
-  //             }
-  //             try{
-  //                 const approveTx = await oevToken.approve(LendingPoolAddress, amount);
-  //                 await approveTx.wait(2);
-  //                 const depositTx = await lendingPool.deposit(OEVTokenAddress, amount, positionWallets[i].address, referralCode);
-  //                 await depositTx.wait(2);
-  //                 console.log(`Deposited OEV Tokens to LendingPool for positionWallet ${i}`);
-  //                 resolve();
-  //             }
-  //             catch(err) {
-  //                 console.log(`Error depositing OEV Tokens to LendingPool for positionWallet ${i}`);
-  //                 console.log(positionWallets[i].address);
-  //                 reject(err);
-  //             }
-  //         })
-  //     )
-  // }
-  // await Promise.all(promises);
+    if (allowance.lt(amount)) {
+      console.log('Approving USDC Tokens for LendingPool...');
+      const approveTx = await usdcToken.approve(LendingPoolAddress, amount, {
+        gasLimit: 300000 // Increased gas limit
+      });
+      await approveTx.wait();
+      console.log('Approval transaction completed');
+    } else {
+      console.log('Sufficient allowance already exists');
+    }
+
+    console.log('Depositing USDC Tokens to LendingPool...');
+    const depositTx = await lendingPool.deposit(
+      USDCTokenAddress,
+      amount,
+      wallet.address,
+      referralCode,
+      {
+        gasLimit: 500000 // Increased gas limit for deposit
+      }
+    );
+    await depositTx.wait();
+    console.log('Deposit transaction completed');
+
+  } catch (error) {
+    console.error('Error:', error.message);
+    if (error.error && error.error.message) {
+      console.error('Detailed error:', error.error.message);
+    }
+  }
 };
 
 // borrow positionWallet USDC from LendingPool
