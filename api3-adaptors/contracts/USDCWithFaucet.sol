@@ -13,7 +13,7 @@ contract USDCTOKEN is ERC20, Ownable {
         return 6;
     }
 
-    function faucet() public payable  {
+    function faucet() public {
         _mint(msg.sender, 1000000 * 10 ** decimals());
     }
 }

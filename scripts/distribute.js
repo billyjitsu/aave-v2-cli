@@ -1,7 +1,6 @@
 const { ethers } = require('ethers');
 require('dotenv').config();
-const path = require('path');
-const referenceData = require(path.join(__dirname, '..', 'api3-adaptors', 'references.json'));
+const referenceData = require('../api3-adaptors/references.json');
 
 // ABI for ERC20 token (only including the functions we need)
 const ERC20_ABI = [
