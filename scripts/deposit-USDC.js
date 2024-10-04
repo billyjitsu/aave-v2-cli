@@ -92,8 +92,7 @@ const depositUSDCTokensToLendingPool = async () => {
 async function main() {
   try {
     await depositUSDCTokensToLendingPool();
-    console.log('Deposit completed successfully. Starting borrow process...');
-    // await borrowUSDCFromLendingPool();
+    console.log('Deposit completed successfully.');
   } catch (error) {
     console.error('An error occurred in the main execution:', error.message);
   }

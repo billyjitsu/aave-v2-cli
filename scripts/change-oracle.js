@@ -2,6 +2,7 @@ const { ethers } = require('ethers');
 require('dotenv').config();
 const path = require('path');
 const referenceData = require(path.join(__dirname, '..', 'api3-adaptors', 'references.json'));
+const configData = require(path.join(__dirname, '..', 'api3-adaptors', 'config.json'));
 
 // Simplified wallet setup
 const mnemonic = process.env.MNEMONIC;
@@ -17,8 +18,8 @@ const abi = [
 ];
 
 // Configuration
-const assetToUpdate = "ARB"; // Change this to the asset symbol you want to update
-const newAssetProxyAddress = "0x10D9b183FCcFDA464e9fbfC2D373A70f6AA3B1Fe"; // This is API3 on Arbisepolia to test
+const assetToUpdate = "API3"; 
+const newAssetProxyAddress = referenceData.MockProxy; // Using MockProxy as the new oracle address
 
 async function updateProxyAddress(assetSymbol, newAssetProxy) {
   const asset = referenceData.assets.find(a => a.assetSymbol === assetSymbol);
@@ -28,7 +29,7 @@ async function updateProxyAddress(assetSymbol, newAssetProxy) {
   }
 
   const contractAddress = asset.Api3AggregatorAdaptor;
-  const newUsdcUsdProxy = referenceData.AggregatorAdaptorUsdc;
+  const usdcUsdProxy = configData.UsdcUsdProxyAddress;
 
   // Create contract instance
   const contract = new ethers.Contract(contractAddress, abi, signer);
@@ -41,24 +42,25 @@ async function updateProxyAddress(assetSymbol, newAssetProxy) {
       return;
     }
 
-    // const currentValue = await contract.latestAnswer();
-    // console.log('Current value:', currentValue.toString());
-
     console.log(`Updating proxy addresses for ${assetSymbol}...`);
     console.log(`Contract Address: ${contractAddress}`);
     console.log(`New Asset Proxy: ${newAssetProxy}`);
-    console.log(`New USDC/USD Proxy: ${newUsdcUsdProxy}`);
+    console.log(`New USDC/USD Proxy: ${usdcUsdProxy}`);
 
     // Call changeProxyAddress function
-    const tx = await contract.changeProxyAddress(newAssetProxy, newUsdcUsdProxy);
+    const tx = await contract.changeProxyAddress(newAssetProxy, usdcUsdProxy);
     console.log('Transaction sent:', tx.hash);
     
     // Wait for transaction to be mined
     await tx.wait();
     console.log('Transaction confirmed');
 
+    // Uncomment these lines if you want to check the value before and after
+    // const currentValue = await contract.latestAnswer();
+    // console.log('Current value:', currentValue.toString());
     // const newValue = await contract.latestAnswer();
     // console.log('New value:', newValue.toString());
+
   } catch (error) {
     console.error('Error:', error.message);
     if (error.data) {

@@ -21,7 +21,7 @@ const mnemonic = process.env.MNEMONIC;
 const provider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_URL);
 // Use the second generated address from the mnemonic
 const hdNode = ethers.utils.HDNode.fromMnemonic(mnemonic);
-const wallet = new ethers.Wallet(hdNode.derivePath("m/44'/60'/0'/0/1")).connect(provider);
+const wallet = new ethers.Wallet(hdNode.derivePath("m/44'/60'/0'/0/0")).connect(provider);
 
 console.log('Wallet Address', wallet.address);
 
@@ -31,8 +31,10 @@ const LENDING_POOL_ABI = [
   "function liquidationCall(address collateralAsset, address debtAsset, address user, uint256 debtToCover, bool receiveAToken) external returns (uint256, string memory)"
 ];
 
+const liquidationWallet = new ethers.Wallet(hdNode.derivePath("m/44'/60'/0'/0/1")).connect(provider);
+console.log('Liquidation Wallet Address:', liquidationWallet.address);
 //Aave V2 deployer wallet address
-const LIQUIDATION_USER = '0x62394a362ba1BbD5125dD39e42bEa8B984b303B8';
+const LIQUIDATION_USER = liquidationWallet.address;
 
 const lendingPool = new ethers.Contract(LENDING_POOL_ADDRESS, LENDING_POOL_ABI, wallet);
 

@@ -41,7 +41,7 @@ const provider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_URL);
 const hdNode = ethers.utils.HDNode.fromMnemonic(mnemonic);
 const wallet = new ethers.Wallet(hdNode.derivePath("m/44'/60'/0'/0/1")).connect(provider);
 
-console.log('Wallet Address', wallet.address);
+// console.log('Wallet Address', wallet.address);
 
 const ERC20Abi = [
   'function balanceOf(address account) public view returns (uint256)',
@@ -65,7 +65,6 @@ const protocolDataProviderAbi = [
 
 const usdcToken = new ethers.Contract(USDCTokenAddress, ERC20Abi, wallet);
 const api3Token = new ethers.Contract(API3TokenAddress, ERC20Abi, wallet);
-// const wethToken = new ethers.Contract(WETHPoolAddress, ERC20Abi, wallet);
 const lendingPool = new ethers.Contract(LendingPoolAddress, lendingPoolAbi, wallet);
 const aaveOracle = new ethers.Contract(AaveOracleAddress, aaveOracleAbi, wallet);
 const protocolDataProvider = new ethers.Contract(ProtocolDataProviderAddress, protocolDataProviderAbi, wallet);
@@ -78,117 +77,119 @@ const getAssetPrice = async (assetAddress) => {
 };
 
 const borrowUSDCFromLendingPool = async () => {
-    try {
-      // Get ETH price
-      const ethPrice = await getAssetPrice(WETHTokenAddress);
-      console.log('ETH Price (in USD):', ethers.utils.formatUnits(ethPrice, 8));
-  
-      // Get API3 price
-      const api3Price = await getAssetPrice(API3TokenAddress);
-      console.log('API3 Price (in USD):', ethers.utils.formatUnits(api3Price, 8));
-  
-      // Get deposited API3 balance using Protocol Data Provider
-      const userReserveData = await protocolDataProvider.getUserReserveData(API3TokenAddress, wallet.address);
-      const depositedAPI3Balance = userReserveData.currentATokenBalance;
-      const api3Decimals = await api3Token.decimals();
-      console.log('Deposited API3 Balance:', ethers.utils.formatUnits(depositedAPI3Balance, api3Decimals));
-  
-      // Calculate API3 value in USD
-      const api3ValueInUsd = depositedAPI3Balance.mul(api3Price).div(ethers.BigNumber.from(10).pow(api3Decimals));
-      const totalCollateralUSD = parseFloat(ethers.utils.formatUnits(api3ValueInUsd, 8));
-      console.log('Total Collateral USD:', totalCollateralUSD.toFixed(2));
-  
-      // Get user's account data
-      const accountData = await lendingPool.getUserAccountData(wallet.address);
-      
-      // Calculate total debt in USD
-      const totalDebtETH = parseFloat(ethers.utils.formatEther(accountData.totalDebtETH));
-      const totalDebtUSD = totalDebtETH * parseFloat(ethers.utils.formatUnits(ethPrice, 8));
-      console.log('Total Debt USD:', totalDebtUSD.toFixed(2));
-  
-      // LTV is returned in basis points, so 7000 means 70%
-      const ltvPercentage = accountData.ltv.toNumber() / 100;
-      console.log('LTV:', `${ltvPercentage}%`);
-  
-      // Calculate available borrows
-      const availableBorrowsUSD = totalCollateralUSD * (ltvPercentage / 100) - totalDebtUSD;
-      console.log('Available Borrows USD:', availableBorrowsUSD.toFixed(2));
-  
-      console.log('Health Factor:', ethers.utils.formatEther(accountData.healthFactor));
-  
-      // Get USDC price (should be close to 1 USD)
-      const usdcPrice = await getAssetPrice(USDCTokenAddress);
-      console.log('USDC Price (in USD):', ethers.utils.formatUnits(usdcPrice, 8));
-  
-      // Calculate maximum borrow amount in USDC
-      const maxBorrowUSDC = availableBorrowsUSD; // Already in USD, no need to convert
-      console.log('Maximum Borrowable (USDC):', maxBorrowUSDC.toFixed(6));
-  
-      // Set borrow amount to 80% of the maximum borrowable amount
-      const borrowPercentage = 80;
-      const borrowAmount = Math.floor(maxBorrowUSDC * borrowPercentage / 100);
-      console.log('Attempting to borrow:', borrowAmount.toFixed(6), 'USDC');
-  
-      // Check if borrowing is possible
-      if (borrowAmount === 0) {
-        console.log('Cannot borrow: Borrow amount is zero');
-        return;
-      }
-  
-      // Convert borrowAmount to Wei (USDC has 6 decimal places)
-      const borrowAmountWei = ethers.utils.parseUnits(borrowAmount.toFixed(6), 6);
-  
-      // Estimate gas for the borrow transaction
-      const estimatedGas = await lendingPool.estimateGas.borrow(
-        USDCTokenAddress,
-        borrowAmountWei,
-        1, // 1 for variable rate, 2 for stable rate
-        referralCode,
-        wallet.address
-      );
-  
-      console.log('Estimated gas:', estimatedGas.toString());
-  
-      // Add a buffer to the estimated gas (e.g., 20% more)
-      const gasLimit = estimatedGas.mul(120).div(100);
-      console.log('Gas limit with buffer:', gasLimit.toString());
-  
-      console.log('Executing borrow transaction...');
-      const borrowTx = await lendingPool.borrow(
-        USDCTokenAddress,
-        borrowAmountWei,
-        1, // 1 for variable rate, 2 for stable rate
-        referralCode,
-        wallet.address,
-        {
-          gasLimit: gasLimit
-        }
-      );
-  
-      console.log('Borrow transaction sent. Waiting for confirmation...');
-      const receipt = await borrowTx.wait();
-      
-      if (receipt.status === 1) {
-        console.log('Borrow transaction completed successfully');
-      } else {
-        console.log('Borrow transaction failed');
-      }
-  
-      // Check USDC balance after borrowing
-      const balance = await usdcToken.balanceOf(wallet.address);
-      console.log('USDC Balance after borrowing:', ethers.utils.formatUnits(balance, 6));
-  
-    } catch (error) {
-      console.error('Error:', error.message);
-      if (error.error && error.error.message) {
-        console.error('Detailed error:', error.error.message);
-      }
-      // Log transaction details if available
-      if (error.transaction) {
-        console.error('Transaction details:', JSON.stringify(error.transaction, null, 2));
-      }
+  try {
+    // Get ETH price
+    const ethPrice = await getAssetPrice(WETHTokenAddress);
+    console.log('ETH Price (in USD):', ethers.utils.formatUnits(ethPrice, 8));
+
+    // Get API3 price
+    const api3Price = await getAssetPrice(API3TokenAddress);
+    console.log('API3 Price (in USD):', ethers.utils.formatUnits(api3Price, 8));
+
+    // Get deposited API3 balance using Protocol Data Provider
+    const userReserveData = await protocolDataProvider.getUserReserveData(API3TokenAddress, wallet.address);
+    const depositedAPI3Balance = userReserveData.currentATokenBalance;
+    const api3Decimals = await api3Token.decimals();
+    console.log('Deposited API3 Balance:', ethers.utils.formatUnits(depositedAPI3Balance, api3Decimals));
+
+    // Calculate API3 value in USD
+    const api3ValueInUsd = depositedAPI3Balance.mul(api3Price).div(ethers.BigNumber.from(10).pow(api3Decimals));
+    const totalCollateralUSD = parseFloat(ethers.utils.formatUnits(api3ValueInUsd, 8));
+    console.log('Total Collateral USD:', totalCollateralUSD.toFixed(2));
+
+    // Get user's account data
+    const accountData = await lendingPool.getUserAccountData(wallet.address);
+    
+    // Calculate total debt in USD
+    const totalDebtETH = parseFloat(ethers.utils.formatEther(accountData.totalDebtETH));
+    const totalDebtUSD = totalDebtETH * parseFloat(ethers.utils.formatUnits(ethPrice, 8));
+    console.log('Total Debt USD:', totalDebtUSD.toFixed(2));
+
+    // LTV is returned in basis points, so 7000 means 70%
+    const ltvPercentage = accountData.ltv.toNumber() / 100;
+    console.log('LTV:', `${ltvPercentage}%`);
+
+    // Calculate available borrows
+    const availableBorrowsUSD = totalCollateralUSD * (ltvPercentage / 100) - totalDebtUSD;
+    console.log('Available Borrows USD:', availableBorrowsUSD.toFixed(2));
+
+    // Get USDC price (should be close to 1 USD)
+    const usdcPrice = await getAssetPrice(USDCTokenAddress);
+    console.log('USDC Price (in USD):', ethers.utils.formatUnits(usdcPrice, 8));
+
+    // Calculate maximum borrow amount in USDC
+    const maxBorrowUSDC = availableBorrowsUSD; // Already in USD, no need to convert
+    console.log('Maximum Borrowable (USDC):', maxBorrowUSDC.toFixed(6));
+
+    // Set borrow amount to 80% of the maximum borrowable amount
+    const borrowPercentage = 80;
+    const borrowAmount = Math.floor(maxBorrowUSDC * borrowPercentage / 100);
+    console.log('Attempting to borrow:', borrowAmount.toFixed(6), 'USDC');
+
+    // Check if borrowing is possible
+    if (borrowAmount === 0) {
+      console.log('Cannot borrow: Borrow amount is zero');
+      return;
     }
-  };
+
+    // Convert borrowAmount to Wei (USDC has 6 decimal places)
+    const borrowAmountWei = ethers.utils.parseUnits(borrowAmount.toFixed(6), 6);
+    console.log('Borrow Amount (Wei):', borrowAmountWei.toString());
+
+    // Estimate gas for the borrow transaction
+    const estimatedGas = await lendingPool.estimateGas.borrow(
+      USDCTokenAddress,
+      borrowAmountWei,
+      1, // 1 for variable rate, 2 for stable rate
+      referralCode,
+      wallet.address
+    );
+
+    console.log('Estimated gas:', estimatedGas.toString());
+
+    // Add a buffer to the estimated gas (e.g., 20% more)
+    const gasLimit = estimatedGas.mul(120).div(100);
+    console.log('Gas limit with buffer:', gasLimit.toString());
+
+    console.log('Executing borrow transaction...');
+    const borrowTx = await lendingPool.borrow(
+      USDCTokenAddress,
+      borrowAmountWei,
+      1, // 1 for variable rate, 2 for stable rate
+      referralCode,
+      wallet.address,
+      {
+        gasLimit: gasLimit
+      }
+    );
+
+    console.log('Borrow transaction sent. Waiting for confirmation...');
+    const receipt = await borrowTx.wait();
+    
+    if (receipt.status === 1) {
+      console.log('Borrow transaction completed successfully');
+    } else {
+      console.log('Borrow transaction failed');
+    }
+
+    // Check USDC balance after borrowing
+    const balance = await usdcToken.balanceOf(wallet.address);
+    console.log('USDC Balance after borrowing:', ethers.utils.formatUnits(balance, 6));
+
+    accountData = await lendingPool.getUserAccountData(wallet.address);
+    console.log('Health Factor:', ethers.utils.formatEther(accountData.healthFactor));
+
+  } catch (error) {
+    console.error('Error:', error.message);
+    if (error.error && error.error.message) {
+      console.error('Detailed error:', error.error.message);
+    }
+    // Log transaction details if available
+    if (error.transaction) {
+      console.error('Transaction details:', JSON.stringify(error.transaction, null, 2));
+    }
+  }
+};
 
 // Main execution function
 async function main() {
