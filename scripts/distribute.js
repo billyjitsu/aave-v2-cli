@@ -2,12 +2,20 @@ const { ethers } = require('ethers');
 require('dotenv').config();
 const referenceData = require('../api3-adaptors/references.json');
 
+/* 
+When deploying the contracts from the CLI, it will mint the tokens to the deployer wallet.
+This distributes tokens to the second wallet generated from the mnemonic without having to do it manually.
+*/
+
 // ABI for ERC20 token (only including the functions we need)
 const ERC20_ABI = [
   "function balanceOf(address owner) view returns (uint256)",
   "function transfer(address to, uint256 amount) returns (bool)",
   "function decimals() view returns (uint8)",
 ];
+
+// Pop in the percentage of tokens from your main wallet you want to send
+const percentageAmountToSend = 20; // 20% of the balance
 
 // Main wallet setup
 const mnemonic = process.env.MNEMONIC;
@@ -46,7 +54,7 @@ async function distributeAssets() {
     
     if (balance.gt(0)) {
       // Calculate 10% of the balance
-      const amountToSend = balance.div(10);
+      const amountToSend = balance.div(percentageAmountToSend);
       
       // Send 10% of the balance to the second wallet
       try {
@@ -61,43 +69,10 @@ async function distributeAssets() {
     }
   }
 
-  // // Check and transfer 10% of ETH balance
-  // const ethBalance = await provider.getBalance(wallet.address);
-  // console.log(`ETH Balance: ${ethers.utils.formatEther(ethBalance)}`);
-
-  // if (ethBalance.gt(0)) {
-  //   try {
-  //     // Calculate 10% of ETH balance
-  //     const tenPercent = ethBalance.div(10);
-      
-  //     // Estimate gas price and cost
-  //     const gasPrice = await provider.getGasPrice();
-  //     const gasLimit = 21000; // Standard gas limit for ETH transfer
-  //     const gasCost = gasPrice.mul(gasLimit);
-
-  //     // Send 10% of ETH minus gas cost, if there's enough
-  //     const amountToSend = tenPercent.sub(gasCost);
-
-  //     if (amountToSend.gt(0)) {
-  //       const tx = await wallet.sendTransaction({
-  //         to: wallet2.address,
-  //         value: amountToSend
-  //       });
-  //       await tx.wait();
-  //       console.log(`Sent ${ethers.utils.formatEther(amountToSend)} ETH to ${wallet2.address}`);
-  //     } else {
-  //       console.log("Not enough ETH to cover gas costs for 10% transfer.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error sending ETH:", error.message);
-  //   }
-  // } else {
-  //   console.log("No ETH balance to distribute.");
-  // }
 }
 
 distributeAssets().then(() => {
-  console.log("10% asset distribution complete.");
+  console.log(`${percentageAmountToSend}% asset distribution complete.`);
 }).catch((error) => {
   console.error("An error occurred:", error);
 });

@@ -4,6 +4,11 @@ const path = require('path');
 const referenceData = require(path.join(__dirname, '..', 'api3-adaptors', 'references.json'));
 const configData = require(path.join(__dirname, '..', 'api3-adaptors', 'config.json'));
 
+/* 
+Script to change the oracle on the contract to cause liquidations
+It may require chanign the mock price oracle value as well "updateMockPrice.js"
+*/
+
 // Simplified wallet setup
 const mnemonic = process.env.MNEMONIC;
 const provider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_URL);

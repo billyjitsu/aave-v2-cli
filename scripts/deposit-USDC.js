@@ -3,6 +3,13 @@ const path = require('path');
 const { ethers } = require('ethers');
 require('dotenv').config();
 
+/* Deposit USDC tokens to the LendingPool contract
+    In order to be able to borrow USDC, the dapp must
+    have USDC tokens deposited in the LendingPool contract.
+*/
+
+const amountOfUSDCToDeposit = 1000; // Amount of USDC tokens to deposit
+
 // Read JSON files
 const referencesPath = path.join(__dirname, '../api3-adaptors/references.json');
 const deployedContractsPath = path.join(__dirname, '../deployed-contracts.json');
@@ -52,7 +59,7 @@ const referralCode = 0;
 console.log("About to deposit USDC Tokens to LendingPool");
 const depositUSDCTokensToLendingPool = async () => {
   try {
-    const amount = ethers.utils.parseUnits('1000', 6);
+    const amount = ethers.utils.parseUnits(amountOfUSDCToDeposit, 6);
     console.log('Wallet Address', wallet.address);
 
     // Check USDC balance

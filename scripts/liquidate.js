@@ -3,10 +3,19 @@ const path = require('path');
 const { ethers } = require('ethers');
 require('dotenv').config();
 
+/*
+  Liquidation script
+  Pays back the debt in USDC and receives the collateral in API3 tokens in this example
+*/
+
+
 // Read JSON files
 const referencesPath = path.join(__dirname, '../api3-adaptors/references.json');
 const deployedContractsPath = path.join(__dirname, '../deployed-contracts.json');
 
+/* These variables reference the JSON files that were created for deployment.
+   Running the scripts seperately, you will have to manually input the asset addresses and lending pool contract address.
+*/
 let references, deployedContracts;
 
 try {
@@ -38,7 +47,7 @@ const LIQUIDATION_USER = liquidationWallet.address;
 
 const lendingPool = new ethers.Contract(LENDING_POOL_ADDRESS, LENDING_POOL_ABI, wallet);
 
-// Asset addresses
+// Asset addresses *These addresses you will have to hardcode on a seperate script
 const API3_ADDRESS = references.assets.find(asset => asset.assetSymbol === "API3").ERC20;
 const USDC_ADDRESS = references.USDCWithFaucet;
 

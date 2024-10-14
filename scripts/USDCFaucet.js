@@ -3,6 +3,11 @@ const path = require('path');
 const { ethers } = require('ethers');
 require('dotenv').config();
 
+/*
+Faucet for the USDC token if needed
+Change Wallet as needed
+*/
+
 // Read JSON file
 const referencesPath = path.join(__dirname, '../api3-adaptors/references.json');
 

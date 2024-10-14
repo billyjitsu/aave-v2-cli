@@ -3,9 +3,15 @@ const path = require('path');
 const { ethers } = require('ethers');
 require('dotenv').config();
 
+/* Borrows USDC based off your token deposit value
+  It will borrow 80% of your maximum available to be safe
+*/
+
 // Read JSON files
 const referencesPath = path.join(__dirname, '../api3-adaptors/references.json');
 const deployedContractsPath = path.join(__dirname, '../deployed-contracts.json');
+
+const tokenThatWasDeposited = "API3";
 
 let references, deployedContracts;
 
@@ -25,11 +31,11 @@ const AaveOracleAddress = deployedContracts.AaveOracle.custom.address;
 const ProtocolDataProviderAddress = deployedContracts.AaveProtocolDataProvider.custom.address;
 
 // Get API3 token address
-const API3TokenAddress = references.assets.find(asset => asset.assetSymbol === "API3").ERC20;
+const API3TokenAddress = references.assets.find(asset => asset.assetSymbol === tokenThatWasDeposited).ERC20;
 const WETHTokenAddress = WETHPoolAddress;
 
 console.log('USDC Token Address:', USDCTokenAddress);
-console.log('API3 Token Address:', API3TokenAddress);
+console.log(`${tokenThatWasDeposited} Token Address:`, API3TokenAddress);
 console.log('WETH Token Address:', WETHPoolAddress);
 console.log('Lending Pool Address:', LendingPoolAddress);
 console.log('Aave Oracle Address:', AaveOracleAddress);
@@ -51,7 +57,8 @@ const ERC20Abi = [
 
 const lendingPoolAbi = [
   'function borrow(address asset, uint256 amount, uint256 interestRateMode, uint16 referralCode, address onBehalfOf) public',
-  'function getUserAccountData(address user) public view returns (uint256 totalCollateralETH, uint256 totalDebtETH, uint256 availableBorrowsETH, uint256 currentLiquidationThreshold, uint256 ltv, uint256 healthFactor)'
+  'function getUserAccountData(address user) public view returns (uint256 totalCollateralETH, uint256 totalDebtETH, uint256 availableBorrowsETH, uint256 currentLiquidationThreshold, uint256 ltv, uint256 healthFactor)',
+  'function getReserveData(address asset) public view returns (uint256 availableLiquidity, uint256 totalStableDebt, uint256 totalVariableDebt, uint256 liquidityRate, uint256 variableBorrowRate, uint256 stableBorrowRate, uint256 averageStableBorrowRate, uint40 liquidityIndex, uint40 variableBorrowIndex, address aTokenAddress, uint256 lastUpdateTimestamp)'
 ];
 
 const aaveOracleAbi = [
@@ -71,6 +78,8 @@ const protocolDataProvider = new ethers.Contract(ProtocolDataProviderAddress, pr
 
 const referralCode = 0;
 
+//https://docs.aave.com/developers/2.0/the-core-protocol/price-oracle/ipriceoracle
+
 const getAssetPrice = async (assetAddress) => {
   const assetPrice = await aaveOracle.getAssetPrice(assetAddress);
   return assetPrice;
@@ -84,13 +93,13 @@ const borrowUSDCFromLendingPool = async () => {
 
     // Get API3 price
     const api3Price = await getAssetPrice(API3TokenAddress);
-    console.log('API3 Price (in USD):', ethers.utils.formatUnits(api3Price, 8));
+    console.log(`tokenThatWasDeposited Price (in USD):`, ethers.utils.formatUnits(api3Price, 8));
 
     // Get deposited API3 balance using Protocol Data Provider
     const userReserveData = await protocolDataProvider.getUserReserveData(API3TokenAddress, wallet.address);
     const depositedAPI3Balance = userReserveData.currentATokenBalance;
     const api3Decimals = await api3Token.decimals();
-    console.log('Deposited API3 Balance:', ethers.utils.formatUnits(depositedAPI3Balance, api3Decimals));
+    console.log(`Deposited ${tokenThatWasDeposited} Balance:`, ethers.utils.formatUnits(depositedAPI3Balance, api3Decimals));
 
     // Calculate API3 value in USD
     const api3ValueInUsd = depositedAPI3Balance.mul(api3Price).div(ethers.BigNumber.from(10).pow(api3Decimals));
@@ -120,6 +129,12 @@ const borrowUSDCFromLendingPool = async () => {
     // Calculate maximum borrow amount in USDC
     const maxBorrowUSDC = availableBorrowsUSD; // Already in USD, no need to convert
     console.log('Maximum Borrowable (USDC):', maxBorrowUSDC.toFixed(6));
+
+    // // Get reserve data for API3 and USDC
+    // const api3ReserveData = await lendingPool.getReserveData(API3TokenAddress);
+    // const usdcReserveData = await lendingPool.getReserveData(USDCTokenAddress);
+    // console.log('API3 Reserve Data:', api3ReserveData);
+    // console.log('USDC Reserve Data:', usdcReserveData);
 
     // Set borrow amount to 80% of the maximum borrowable amount
     const borrowPercentage = 80;

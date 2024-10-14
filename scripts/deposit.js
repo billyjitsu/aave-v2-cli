@@ -5,6 +5,15 @@ require('dotenv').config();
 // const referencesPath = require('../api3-adaptors/references.json');
 // const deployedContractsPath = require('../deployed-contracts.json');
 
+/*
+Deposit API3 tokens to the LendingPool contract
+This script utilizes the MOCK API3 tokens to deposit and use it as collateral to borrow other assets.
+To change the token you want to deposit, change the token name below
+*/
+
+const tokenToDeposit = "API3";
+const amountofTokenToDeposit = '1000'; // Amount of API3 tokens to deposit
+
 // Read JSON files
 const referencesPath = path.join(__dirname, '../api3-adaptors/references.json');
 const deployedContractsPath = path.join(__dirname, '../deployed-contracts.json');
@@ -20,10 +29,10 @@ try {
 }
 
 // Get addresses from JSON files
-const API3TokenAddress = references.assets.find(asset => asset.assetSymbol === "API3").ERC20;
+const API3TokenAddress = references.assets.find(asset => asset.assetSymbol === tokenToDeposit).ERC20;
 const LendingPoolAddress = deployedContracts.LendingPool.custom.address;
 
-console.log('API3 Token Address:', API3TokenAddress);
+console.log(`${tokenToDeposit} Token Address:`, API3TokenAddress);
 console.log('Lending Pool Address:', LendingPoolAddress);
 
 const mnemonic = process.env.MNEMONIC;
@@ -54,7 +63,7 @@ const referralCode = 0;
 console.log("About to deposit API3 Tokens to LendingPool");
 const depositAPI3TokensToLendingPool = async () => {
   try {
-    const amount = ethers.utils.parseUnits('1000', 18); // Assuming API3 has 18 decimals
+    const amount = ethers.utils.parseUnits(amountofTokenToDeposit, 18); // Assuming API3 has 18 decimals
     console.log('Wallet Address', wallet.address);
 
     // Check API3 balance
