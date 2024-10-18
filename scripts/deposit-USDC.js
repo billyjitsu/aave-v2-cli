@@ -8,7 +8,7 @@ require('dotenv').config();
     have USDC tokens deposited in the LendingPool contract.
 */
 
-const amountOfUSDCToDeposit = 1000; // Amount of USDC tokens to deposit
+const amountOfUSDCToDeposit = "1000"; // Amount of USDC tokens to deposit
 
 // Read JSON files
 const referencesPath = path.join(__dirname, '../api3-adaptors/references.json');

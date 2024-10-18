@@ -11,6 +11,12 @@
       "assetSymbol": "API3",
       "pairName": "API3/USDC",
       "proxyAddress": "0x97A076AB5C96FA28E6Cc4929AdBF1e75D6A9cb72"
+    },
+    {
+      "assetName": "Billyjitsu Token",
+      "assetSymbol": "BJT",
+      "pairName": "BJT/USDC",
+      "proxyAddress": "0x66B8FD1a3550B15Bf5DfEF1eE90b9970B0DfF6Fa"
     }
   ],
   "EthUsdProxyAddress": "0xa47Fd122b11CdD7aad7c3e8B740FB91D83Ce43D1",

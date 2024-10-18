@@ -24,7 +24,7 @@ async function updatePriceValue() {
     console.log(`Updating mock proxy price`);
 
     // Calculate the value for 50 cents (half of the original value)
-    const newValue = 999903720000000000n / 2n; // Using BigInt for precise division
+    const newValue = 1100903720000000000n / 2n; // Using BigInt for precise division
 
     // Call updateValue function
     const tx = await contract.updateValue(newValue);

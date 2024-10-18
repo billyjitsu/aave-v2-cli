@@ -12,7 +12,7 @@ To change the token you want to deposit, change the token name below
 */
 
 const tokenToDeposit = "API3";
-const amountofTokenToDeposit = '1000'; // Amount of API3 tokens to deposit
+const amountofTokenToDeposit = "1000"; // Amount of API3 tokens to deposit
 
 // Read JSON files
 const referencesPath = path.join(__dirname, '../api3-adaptors/references.json');

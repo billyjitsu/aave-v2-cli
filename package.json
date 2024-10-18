@@ -20,7 +20,15 @@
     "frontend:dev": "cd api3-aave-ui && yarn && yarn dev",
     "frontend:build": "cd api3-aave-ui && yarn && yarn build",
     "frontend:update": "cd api3-aave-ui && git stash && git pull && yarn && cd .. && node helpers/configure-frontend.js",
-    "frontend:clean": "rm -rf api3-aave-ui"
+    "frontend:clean": "rm -rf api3-aave-ui",
+    "distribute": "npx hardhat run scripts/distribute.js",
+    "deposit-USDC": "npx hardhat run scripts/deposit-USDC.js",
+    "deposit": "npx hardhat run scripts/deposit.js",
+    "borrow": "npx hardhat run scripts/borrow.js",
+    "updateMockPrice": "npx hardhat run scripts/updateMockPrice.js",
+    "change-oracle": "npx hardhat run scripts/change-oracle.js",
+    "liquidate": "npx hardhat run scripts/liquidate.js",
+    "burntokens": "npx hardhat run scripts/burntokens.js"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "^1.4.7",
