@@ -24,7 +24,7 @@
   "network": {
     "chainId": 421614,
     "name": "Arbitrum Sepolia",
-    "rpc": "https://alien-thrumming-wind.arbitrum-sepolia.quiknode.pro/9e2372398f5f5bd9211072baca92043313851728",
+    "rpc": "YOUR RPC HERE",
     "nativeCurrency": {
       "name": "Ether",
       "symbol": "ETH",
